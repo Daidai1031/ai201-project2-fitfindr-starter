@@ -138,12 +138,23 @@ Write out what a full user interaction looks like from start to finish — tool 
 
 **Step 1:**
 <!-- What does the agent do first? Which tool is called? With what input? -->
+ **Parse:** Regex finds `$30` → `max_price = 30.0`. No "size X" pattern and no standalone size token (note: "baggy jeans" does *not* match the size-token regex, which is the point of using a narrow pattern). `size = None`. Remaining text after stripping price/filler words → `description = "vintage graphic tee"`.
+
 
 **Step 2:**
 <!-- What happens next? What was returned from step 1? What tool is called now? -->
+**Search:** `search_listings("vintage graphic tee", None, 30.0)` scores listings by keyword overlap. `lst_033` ("Vintage Band Tee — Faded Grey", $19, tags include "vintage"/"graphic tee") and `lst_006` ("Graphic Tee — 2003 Tour Bootleg Style", $24) both qualify; `lst_033` scores highest and becomes `session["selected_item"]`.
+
 
 **Step 3:**
 <!-- Continue until the full interaction is complete -->
+**Outfit:** `suggest_outfit(selected_item, example_wardrobe)`. Wardrobe is non-empty (it has `w_001` baggy jeans and `w_007` chunky sneakers), so the LLM is prompted to pair the tee with those specific pieces: something like pairing the faded tee with the baggy dark-wash jeans and chunky white sneakers for an easy grunge look, with the black combat boots as an alternate shoe option.
+
+**Step 4**: 
+
+**Fit card:** `create_fit_card(outfit_suggestion, selected_item)` produces a short caption mentioning the tee, its $19 price, Depop, and the grunge/jeans pairing — phrased like a real caption, not a listing description.
+
 
 **Final output to user:**
 <!-- What does the user actually see at the end? -->
+The Gradio UI's three panels show (1) the selected listing's title/price/platform/condition, (2) the outfit suggestion text, (3) the fit card caption — all from one query, no re-entry of the item between steps.
